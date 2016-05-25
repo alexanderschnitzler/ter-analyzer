@@ -1,0 +1,26 @@
+{
+    "name": "aschnitzler/ter",
+    "description": "",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Alexander Schnitzler",
+            "email": "git@alexanderschnitzler.de"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Schnitzler\\": "src/"
+        }
+    },
+    "require": {
+        "doctrine/dbal": "^2.5",
+        "guzzlehttp/guzzle": "^6.2",
+        "symfony/console": "^3.0",
+        "vipsoft/unzip": "^1.2",
+        "josegonzalez/dotenv": "^2.0"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^3.0"
+    }
+}

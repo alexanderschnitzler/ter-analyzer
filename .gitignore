@@ -1,0 +1,5 @@
+/.env
+/.sonar
+/sonar-project.properties
+/tmp
+/vendor
