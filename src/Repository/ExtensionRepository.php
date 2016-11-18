@@ -89,16 +89,23 @@ class ExtensionRepository
             $extensions[(string)$extension['extensionkey']] = $extensionVersions;
         }
         unset($extension);
+        unset($version);
+        unset($versionString);
+        unset($extensionVersions);
+        unset($gzFileName);
+        unset($forceDownload);
 
-        $qb = Bootstrap::$db->createQueryBuilder();
-        $sql = 'SELECT * FROM extensions WHERE name = :name';
-        $statement = Bootstrap::$db->prepare($sql);
+        $sql = 'SELECT uid FROM extensions WHERE name = :name';
+        $fetchEtensionStatement = Bootstrap::$db->prepare($sql);
+
+        $sql = 'SELECT v.name as version FROM extensions e JOIN versions v on v.extension = e.uid WHERE e.name = :name';
+        $fetchExtensionVersionsStatement = Bootstrap::$db->prepare($sql);
 
         foreach ($extensions as $key => $versions) {
-            $statement->bindValue('name', $key);
-            $statement->execute();
+            $fetchEtensionStatement->bindValue('name', $key);
+            $fetchEtensionStatement->execute();
 
-            if ($statement->rowCount() === 0) {
+            if ($fetchEtensionStatement->rowCount() === 0) {
                 $guid = $this->getGuid();
                 Bootstrap::$db->insert(
                     'extensions',
@@ -107,18 +114,28 @@ class ExtensionRepository
                         'name' => $key
                     ]
                 );
+            } else {
+                $guid = $fetchEtensionStatement->fetchColumn();
+            }
 
-                foreach ($versions as $version) {
-                    Bootstrap::$db->insert(
-                        'versions',
-                        [
-                            'uid' => $this->getGuid(),
-                            'name' => $version,
-                            'extension' => $guid
-                        ]
-                    );
-                }
+            $fetchExtensionVersionsStatement->bindValue('name', $key);
+            $fetchExtensionVersionsStatement->execute();
 
+            $versionsInDatabase = array_map(function($row) {
+                return $row['version'];
+            }, $fetchExtensionVersionsStatement->fetchAll());
+
+            foreach ($missingVersions = array_diff($versions, $versionsInDatabase) as $missingVersion) {
+                Bootstrap::$db->insert(
+                    'versions',
+                    [
+                        'uid' => $this->getGuid(),
+                        'name' => $missingVersion,
+                        'extension' => $guid
+                    ]
+                );
+
+                $qb = Bootstrap::$db->createQueryBuilder();
                 $count = $qb->select('*')
                     ->from('versions')
                     ->where('extension = ' . Bootstrap::$db->quote($guid))
