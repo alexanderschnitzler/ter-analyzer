@@ -94,7 +94,7 @@ class Bootstrap
         if (!static::$db->getSchemaManager()->tablesExist(['extensions'])) {
             $extensions = $schema->createTable('extensions');
             $extensions->addColumn('uid', 'guid');
-            $extensions->addColumn('versions', 'integer', ['unsigned' => true]);
+            $extensions->addColumn('versions', 'integer', ['unsigned' => true, 'default' => 1]);
             $extensions->addColumn('name', 'string');
             $extensions->setPrimaryKey(['uid']);
         }
@@ -104,8 +104,8 @@ class Bootstrap
             $versions->addColumn('uid', 'guid');
             $versions->addColumn('name', 'string');
             $versions->addColumn('extension', 'guid');
-            $versions->addColumn('downloaded', 'boolean');
-            $versions->addColumn('analyzed', 'boolean');
+            $versions->addColumn('downloaded', 'boolean', ['default' => 1]);
+            $versions->addColumn('analyzed', 'boolean', ['default' => 1]);
             $versions->addForeignKeyConstraint('extensions', ['extension'], ['uid']);
             $versions->setPrimaryKey(['uid']);
         }
